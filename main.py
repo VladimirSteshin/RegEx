@@ -26,13 +26,33 @@ def change_view(select, order, contacts):
     for person in contacts:
         res = re.sub(select, order, ','.join(person))
         res = re.sub(r'^(\w+).(\w+).(\w+)*', r'\1,\2,\3', res)
-        res = re.sub(r',+', r',', res)
         res = re.sub(r' ,', r',', res)
-        res = re.sub(r'[\s,]*$', r'', res)
+        res = re.sub(r'(^\w+.\w+.\w+)(,{1,3})', r'\1,', res)
         changed_list.append(res.split(','))
+    for person in changed_list:
+        if len(person) < len(contacts[0]):
+            diff = len(contacts[0]) - len(person)
+            for times in range(diff):
+                person.insert(3, '')
     return changed_list
 
 
+def merge(changed_list):
+    join = {}
+    for person in changed_list:
+        key_name = f'{person[0]} {person[1]}'
+        info = []
+        for data in person[2:]:
+            info.append(data)
+        if key_name not in join.keys():
+            join[key_name] = info
+        else:
+            for num in range(len(join[key_name])):
+                if join[key_name][num] == '' and info[num] != '':
+                    join[key_name][num] = info[num]
+    return join
+
+
 if __name__ == '__main__':
-    change = change_view(*get_params('config.ini'), get_list('phonebook_raw.csv'))
-    pprint(change, width=250)
+    changed = change_view(*get_params('config.ini'), get_list('phonebook_raw.csv'))
+    pprint(merge(changed), width=250)
