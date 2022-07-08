@@ -11,22 +11,32 @@ def get_list(file_name):
         return contacts
 
 
-def get_phone_params(config):
+def get_params(config):
     extract = configparser.ConfigParser()
     extract.read(config)
-    select = extract['Telephones']['select']
-    order = extract['Telephones']['order']
-    return select, order
+    t_select = extract['Telephones']['select']
+    t_order = extract['Telephones']['order']
+    n_select = extract['Names']['select']
+    n_order = extract['Names']['order']
+    return t_select, t_order, n_select, n_order
 
 
-def change_phone_view(*select_order):
-    select, order = select_order
-    select = r'{}'.format(select)
-    order = r'{}'.format(order)
-    print(select)
-    print(order)
+def change_view(t_select, t_order, n_select, n_order, contacts):
+    t_select = r'{}'.format(t_select)
+    t_order = r'{}'.format(t_order)
+    n_select = r'{}'.format(n_select)
+    n_order = r'{}'.format(n_order)
+    changed_list = []
+    for person in contacts:
+        res = re.sub(t_select, t_order, ','.join(person))
+        res = re.sub(n_select, n_order, res)
+        res = re.sub(r',+', r',', res)
+        res = re.sub(r' ,', r',', res)
+        res = re.sub(r'[\s,]*$', r'', res)
+        res = res.split(',')
+        changed_list.append(res)
+    return changed_list
 
 
 if __name__ == '__main__':
-    get_list('phonebook_raw.csv')
-    change_phone_view(*get_phone_params('config.ini'))
+    change = change_view(*get_params('config.ini'), get_list('phonebook_raw.csv'))
