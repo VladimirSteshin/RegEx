@@ -1,7 +1,5 @@
 import re
-import configparser
 import csv
-from pprint import pprint
 
 
 def get_list(file_name):
@@ -11,17 +9,7 @@ def get_list(file_name):
         return contacts
 
 
-def get_params(config):
-    extract = configparser.ConfigParser()
-    extract.read(config)
-    select = extract['Telephones']['select']
-    order = extract['Telephones']['order']
-    return select, order
-
-
 def change_view(select, order, contacts):
-    select = r'{}'.format(select)
-    order = r'{}'.format(order)
     changed_list = []
     for person in contacts:
         res = re.sub(select, order, ','.join(person))
@@ -75,7 +63,9 @@ def write(contacts_list):
 
 
 if __name__ == '__main__':
-    changed = change_view(*get_params('config.ini'), get_list('phonebook_raw.csv'))
+    photos = r'(\+7|8)*[\s\(-]*(\d{3})[\s\)-]*(\d{3})[\s-]*(\d{2})[\s-]*(\d{2})[\s\(]*(доб\.)*\s*(\d+)*\)*'
+    organise = r'\1(\2)\3-\4-\5 \6\7'
+    changed = change_view(photos, organise, get_list('phonebook_raw.csv'))
     merged_dict = get_merge(changed)
     list_for_write = get_list_for_write(merged_dict)
     write(list_for_write)
