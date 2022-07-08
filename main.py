@@ -37,7 +37,7 @@ def change_view(select, order, contacts):
     return changed_list
 
 
-def merge(changed_list):
+def get_merge(changed_list):
     join = {}
     for person in changed_list:
         key_name = f'{person[0]} {person[1]}'
@@ -50,9 +50,32 @@ def merge(changed_list):
             for num in range(len(join[key_name])):
                 if join[key_name][num] == '' and info[num] != '':
                     join[key_name][num] = info[num]
+    for value in join.values():
+        for num, item in enumerate(value):
+            if item == '':
+                value[num] = 'No data'
     return join
+
+
+def get_list_for_write(dict_to_list):
+    contacts_list = []
+    for key, value in dict_to_list.items():
+        get_names = key.split()
+        lastname, firstname = get_names[0], get_names[1]
+        value.insert(0, firstname)
+        value.insert(0, lastname)
+        contacts_list.append(value)
+    return contacts_list
+
+
+def write(contacts_list):
+    with open("phonebook.csv", "w", encoding='UTF-8') as f:
+        datawriter = csv.writer(f, delimiter=',')
+        datawriter.writerows(contacts_list)
 
 
 if __name__ == '__main__':
     changed = change_view(*get_params('config.ini'), get_list('phonebook_raw.csv'))
-    pprint(merge(changed), width=250)
+    merged_dict = get_merge(changed)
+    list_for_write = get_list_for_write(merged_dict)
+    write(list_for_write)
